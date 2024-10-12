@@ -1,12 +1,19 @@
 #include <micro_ros_arduino.h>
-
 #include <stdio.h>
 #include <rcl/rcl.h>
 #include <rcl/error_handling.h>
 #include <rclc/rclc.h>
 #include <rclc/executor.h>
-
 #include <std_msgs/msg/float32_multi_array.h>
+
+// Publisher Code
+// ===========================================================
+// ESP32 Communication via MicroROS (Publisher -> Subscriber)
+// CODE BY: PEDRO H. PERES
+// GITHUB: PedroH-Peres (https://github.com/PedroH-Peres/microros_array_communication)
+// ABOUT: This is code that is part of the pub_sub set of Float32MultiArray with a feedback topic that sums the Array values.
+// OBJECTIVE: It aims to facilitate the understanding of the publisher - subscriber set using standard array type messages
+// ===========================================================
 
 rcl_publisher_t publisher;
 std_msgs__msg__Float32MultiArray msg;
@@ -15,6 +22,11 @@ rclc_support_t support;
 rcl_allocator_t allocator;
 rcl_node_t node;
 rcl_timer_t timer;
+
+//=====================
+// Config Variables
+int SIZE = 3;
+//=====================
 
 #define LED_PIN 13
 #define RCCHECK(fn) { rcl_ret_t temp_rc = fn; if((temp_rc != RCL_RET_OK)){error_loop();}}
@@ -38,7 +50,7 @@ void timer_callback(rcl_timer_t * timer, int64_t last_call_time)
 }
 
 void setup() {
-   set_microros_transports();
+  set_microros_transports();
   
   pinMode(LED_PIN, OUTPUT);
   digitalWrite(LED_PIN, HIGH);  
@@ -74,19 +86,18 @@ void setup() {
 
   // Initialize the message
   msg.data.data = data;
-  msg.data.capacity = 3;  // Size of your array
-  msg.data.size = 3;      // Set initial size to match capacity
+  msg.data.capacity = SIZE;  // Size of your array
+  msg.data.size = SIZE;      // Set initial size to match capacity
 }
 
 void loop() {
     // Populate the array with data
-  for (size_t i = 0; i < 3; i++) {
-    msg.data.data[i] = (float)i;  // Example data
+  for (size_t i = 0; i < SIZE; i++) {
+    msg.data.data[i] = (float)i+2.0;  // Example data array based on your defined SIZE
   }
 
   RCSOFTCHECK(rclc_executor_spin_some(&executor, RCL_MS_TO_NS(100)));
   
-  // Add a delay to simulate sensor update rate
   delay(500);
 
 }
